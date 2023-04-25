@@ -21,6 +21,27 @@ class ContentViewModel: ObservableObject {
         Quote(quote: "I am the danger.", author: "Walt"),
         Quote(quote: "Yeah, science!", author: "Jesse")
     ]
+    
+    func getData() async {
+
+        // 1. create the url
+        guard let url = URL(string: "https://api.breakingbadquotes.xyz/v1/quotes/5") else {
+            print("bad url")
+            return
+        }
+        
+        // 2. fetch data from that url
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            // decode that data
+            if let decodedData = try? JSONDecoder().decode([Quote].self, from: data) {
+                quotes = decodedData
+            }
+        } catch {
+            print("invalid data")
+        }
+    }
 }
 
 struct ContentView: View {
@@ -51,29 +72,8 @@ struct ContentView: View {
             }
             .navigationTitle("Quotes")
             .task {
-                await getData()
+                await vm.getData()
             }
-        }
-    }
-    
-    func getData() async {
-
-        // 1. create the url
-        guard let url = URL(string: "https://api.breakingbadquotes.xyz/v1/quotes/5") else {
-            print("bad url")
-            return
-        }
-        
-        // 2. fetch data from that url
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            
-            // decode that data
-            if let decodedData = try? JSONDecoder().decode([Quote].self, from: data) {
-                vm.quotes = decodedData
-            }
-        } catch {
-            print("invalid data")
         }
     }
 }
